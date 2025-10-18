@@ -10,8 +10,22 @@ const dashboardRoutes = require("./src/routes/dashboard.routes");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configuración CORS mejorada para producción
+const corsOptions = {
+  origin: [
+    'http://localhost:3000', // Para desarrollo local
+    'http://localhost:5178',  // Para desarrollo local del frontend
+    /^https:\/\/.*\.cloudfront\.net$/, // Permite cualquier subdominio de CloudFront
+    /^https:\/\/.*\.amazonaws\.com$/, // Permite S3 directo si es necesario
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with'],
+  optionsSuccessStatus: 200
+};
+
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 connectDB();
 
@@ -24,7 +38,16 @@ app.get("/", (req, res) => res.send("API OK"));
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: { 
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5178',
+      /^https:\/\/.*\.cloudfront\.net$/,
+      /^https:\/\/.*\.amazonaws\.com$/
+    ], 
+    methods: ["GET", "POST"],
+    credentials: true
+  },
 });
 
 const Score = require("./src/models/score.model");
